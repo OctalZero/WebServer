@@ -1,2 +1,2 @@
 # WebServer
-A C++ lightweight Web Server.
+A C++ Lightweight Web Server.
