@@ -1,28 +1,37 @@
-<!DOCTYPE html>
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>登录界面</title>
+    <meta charset="utf-8" />
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="../css/index.css" />
+    <link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
 </head>
 
 <body>
-    <br />
-    <br />
-    <div align="center">
-        <font size="5"> <strong>登录界面</strong></font>
-    </div>
-    <br />
-    <div class="login">
+    <div id="login-box">
+        <h1>Login</h1>
         <form action="2CGISQL.cgi" method="post">
-            <div align="center"><input type="text" name="user" placeholder="用户名" required="required"></div><br />
-            <div align="center"><input type="password" name="password" placeholder="登录密码" required="required"></div>
+            <div class="input-box">
+                <i class="iconfont">&#xe609;</i>
+                <input type="text" name="user" placeholder="用户名" required="required">
+            </div>
             <br />
-            <div align="center"><button type="submit">确定</button></div>
+            <div class="input-box">
+                <i class="iconfont">&#xe605;</i>
+                <input type="password" name="password" placeholder="登录密码" required="required">
+            </div>
+            <br />
+            <div align="center">
+                <button type="submit">立即登录</button>
+            </div>
+            <br />
+            <div align="center" style="color: white">
+                提示：用户名或密码错误，请重试！
+            </div>
         </form>
-        <br />
-        <div align="center">提示：用户名或密码错误，请重试！</div>
+
     </div>
+
 </body>
 
 </html>

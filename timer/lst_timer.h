@@ -100,7 +100,6 @@ class sort_timer_lst {
         if (!head) {
             return;
         }
-        // printf( "timer tick\n" );
         LOG_INFO("%s", "timer tick");
         Log::get_instance()->flush();
         time_t cur = time(NULL);
