@@ -150,8 +150,8 @@ class http_conn {
     MYSQL* mysql;             // 数据库
 
    private:
-    int m_sockfd;  // 该HTTP连接的socket和对方的socket地址
-    sockaddr_in m_address;
+    int m_sockfd;           // 该HTTP连接的socket
+    sockaddr_in m_address;  // 客户端的socket地址
 
     char m_read_buf[READ_BUFFER_SIZE];  // 读缓冲区
     int m_read_idx;  // 标识读缓冲区中已经读入的客户端数据的最后一个字节的下一个位置
@@ -167,7 +167,7 @@ class http_conn {
     char m_real_file[FILENAME_LEN];  // 客户请求的目标文件的完整路径，其内容等于
                                      // doc_root + m_url, doc_root是网站根目录
     char* m_url;           // 客户请求的目标文件的文件名
-    char* m_version;       // HTTP协议版本号，我们仅支持HTTP1.1
+    char* m_version;       // HTTP协议版本号，当前仅支持HTTP1.1
     char* m_host;          // 主机名
     int m_content_length;  // HTTP请求的消息总长度
     bool m_linger;         // HTTP请求是否要求保持连接
@@ -178,8 +178,8 @@ class http_conn {
     struct iovec m_iv[2];  // 将采用writev来执行写操作
     int m_iv_count;        // 被写内存块的数量
 
-    int cgi;         //是否启用的POST
-    char* m_string;  //存储请求头数据
+    int cgi;         // 是否启用的POST
+    char* m_string;  // 存储请求体数据
 
     int bytes_to_send;    // 将要发送的数据的字节数
     int bytes_have_send;  // 已经发送的字节数

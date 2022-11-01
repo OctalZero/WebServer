@@ -1,6 +1,12 @@
 /*
  * 使用 select 实现 IO 多路复用
  * author: octalzero
+ * fd_set set;
+ * FD_ZERO(&set);      // 将set清零使集合中不含任何fd
+ * FD_SET(fd, &set);   // 将fd加入set集合
+ * FD_CLR(fd, &set);   // 将fd从set集合中清除
+ * FD_ISSET(fd,&set);
+ * //在调用select()函数后，用FD_ISSET来检测fd是否在set集合中，当检测到fd在set中则返回真，否则，返回假（0）
  */
 #include <arpa/inet.h>
 #include <stdio.h>
