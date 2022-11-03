@@ -1,10 +1,11 @@
 /*
- * 基于双向链表实现的定时器
+ * 基于双向升序链表实现的定时器
  * author: octalzero
  */
 #ifndef LST_TIMER
 #define LST_TIMER
 
+#include <netinet/in.h>
 #include <time.h>
 
 #include "../log/log.h"
