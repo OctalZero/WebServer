@@ -95,7 +95,7 @@ bool connection_pool::ReleaseConnection(MYSQL *con) {
     return true;
 }
 
-//销毁数据库连接池
+// 销毁数据库连接池
 void connection_pool::DestroyPool() {
     lock.lock();
     if (connList.size() > 0) {

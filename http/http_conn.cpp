@@ -123,7 +123,7 @@ int http_conn::m_user_count = 0;
 // 所有socket上的事件都被注册到同一个epoll内核事件中，所以设置成静态的
 int http_conn::m_epollfd = -1;
 
-//关闭连接，关闭一个连接，客户总量减一
+// 关闭连接，关闭一个连接，客户总量减一
 void http_conn::close_conn(bool real_close) {
     if (real_close && (m_sockfd != -1)) {
         removefd(m_epollfd, m_sockfd);
@@ -407,10 +407,10 @@ http_conn::HTTP_CODE http_conn::do_request() {
             password[j] = m_string[i];
         password[j] = '\0';
 
-        //同步线程登录校验
+        // 同步线程登录校验
         if (*(p + 1) == '3') {
-            //如果是注册，先检测数据库中是否有重名的
-            //没有重名的，进行增加数据
+            // 如果是注册，先检测数据库中是否有重名的
+            // 没有重名的，进行增加数据
             char *sql_insert = (char *)malloc(sizeof(char) * 200);
             strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
             strcat(sql_insert, "'");
@@ -432,8 +432,8 @@ http_conn::HTTP_CODE http_conn::do_request() {
             } else
                 strcpy(m_url, "/page/registerError.html");
         }
-        //如果是登录，直接判断
-        //若浏览器端输入的用户名和密码在表中可以查找到，返回1，否则返回0
+        // 如果是登录，直接判断
+        // 若浏览器端输入的用户名和密码在表中可以查找到，返回1，否则返回0
         else if (*(p + 1) == '2') {
             if (users.find(name) != users.end() && users[name] == password)
                 strcpy(m_url, "/page/welcome.html");
@@ -505,7 +505,7 @@ bool http_conn::write() {
     }
 
     while (1) {
-        // 分散写
+        // 聚集写
         temp = writev(m_sockfd, m_iv, m_iv_count);
 
         if (temp < 0) {

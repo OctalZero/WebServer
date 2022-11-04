@@ -17,10 +17,10 @@ Log::~Log() {
         fclose(m_fp);
     }
 }
-//异步需要设置阻塞队列的长度，同步不需要设置
+// 异步需要设置阻塞队列的长度，同步不需要设置
 bool Log::init(const char *file_name, int log_buf_size, int split_lines,
                int max_queue_size) {
-    //如果设置了max_queue_size,则设置为异步
+    // 如果设置了max_queue_size,则设置为异步
     if (max_queue_size >= 1) {
         m_is_async = true;
         m_log_queue = new block_queue<string>(max_queue_size);
@@ -86,7 +86,7 @@ void Log::write_log(int level, const char *format, ...) {
             strcpy(s, "[info]:");
             break;
     }
-    //写入一个log，对m_count++, m_split_lines最大行数
+    // 写入一个log，对m_count++, m_split_lines最大行数
     m_mutex.lock();
     m_count++;
 

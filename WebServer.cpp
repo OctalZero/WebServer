@@ -1,3 +1,7 @@
+/*
+ * WebServer 主函数
+ * author: octalzero
+ */
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -15,7 +19,8 @@
 #include "./lock/locker.h"
 #include "./log/log.h"
 #include "./threadpool/threadpool.h"
-#include "./timer/lst_timer.h"
+// #include "./timer/lst_timer.h"
+#include "./timer/heap_timer.h"
 
 #define MAX_FD 65536            // 最大的文件描述符个数
 #define MAX_EVENT_NUMBER 10000  // 监听的最大的事件数量
@@ -37,7 +42,7 @@ extern int setnonblocking(int fd);
 
 // 设置定时器相关参数
 static int pipefd[2];
-static sort_timer_lst timer_lst;
+static time_heap timer_heap;
 static int epollfd = 0;
 
 // 信号处理函数
@@ -67,7 +72,7 @@ void show_error(int connfd, const char* info) {
 
 // 定时处理任务，重新定时以不断触发SIGALRM信号
 void timer_handler() {
-    timer_lst.tick();
+    timer_heap.tick();
     alarm(TIMESLOT);
 }
 
@@ -100,7 +105,7 @@ int main(int argc, char* argv[]) {
     // 忽略 SIGPIPE 信号
     addsig(SIGPIPE, SIG_IGN);
 
-    //创建数据库连接池
+    // 创建数据库连接池
     connection_pool* connPool = connection_pool::GetInstance();
     connPool->init("localhost", "root", "123456", "webdb", 3306, 8);
 
@@ -162,7 +167,6 @@ int main(int argc, char* argv[]) {
     addsig(SIGTERM, sig_handler, false);
     bool stop_server = false;
 
-    // TODO
     client_data* users_timer = new client_data[MAX_FD];
 
     bool timeout = false;
@@ -202,17 +206,16 @@ int main(int argc, char* argv[]) {
                 users[connfd].init(connfd, client_address);
 
                 // 初始化client_data数据
-                // 创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
-                // TODO
+                // 创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到小顶堆中
                 users_timer[connfd].address = client_address;
                 users_timer[connfd].sockfd = connfd;
-                util_timer* timer = new util_timer;
+                timer_node* timer = new timer_node();
                 timer->user_data = &users_timer[connfd];
                 timer->cb_func = cb_func;
                 time_t cur = time(NULL);
                 timer->expire = cur + 3 * TIMESLOT;
                 users_timer[connfd].timer = timer;
-                timer_lst.add_timer(timer);
+                timer_heap.add_timer(timer);
 #endif
 
 #ifdef listenfdET
@@ -231,29 +234,28 @@ int main(int argc, char* argv[]) {
                     }
                     users[connfd].init(connfd, client_address);
 
-                    // TODO
-                    //初始化client_data数据
-                    //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到小顶堆中
+                    // 初始化client_data数据
+                    // 创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到小顶堆中
                     users_timer[connfd].address = client_address;
                     users_timer[connfd].sockfd = connfd;
-                    util_timer* timer = new util_timer;
+                    timer_node* timer = new timer_node();
                     timer->user_data = &users_timer[connfd];
                     timer->cb_func = cb_func;
                     time_t cur = time(NULL);
                     timer->expire = cur + 3 * TIMESLOT;
                     users_timer[connfd].timer = timer;
-                    timer_lst.add_timer(timer);
+                    timer_heap.add_timer(timer);
                 }
                 continue;
 #endif
             }
             // 客户端关闭连接，移除对应的定时器
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
-                util_timer* timer = users_timer[sockfd].timer;
+                timer_node* timer = users_timer[sockfd].timer;
                 timer->cb_func(&users_timer[sockfd]);
 
                 if (timer) {
-                    timer_lst.del_timer(timer);
+                    timer_heap.del_timer(timer);
                 }
             }
 
@@ -282,7 +284,7 @@ int main(int argc, char* argv[]) {
 
             // 处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN) {
-                util_timer* timer = users_timer[sockfd].timer;
+                timer_node* timer = users_timer[sockfd].timer;
                 if (users[sockfd].read_once()) {
                     LOG_INFO("deal with the client(%s)",
                              inet_ntoa(users[sockfd].get_address()->sin_addr));
@@ -297,16 +299,16 @@ int main(int argc, char* argv[]) {
                         timer->expire = cur + 3 * TIMESLOT;
                         LOG_INFO("%s", "adjust timer once");
                         Log::get_instance()->flush();
-                        timer_lst.adjust_timer(timer);
+                        timer_heap.adjust_timer(timer);
                     }
                 } else {
                     timer->cb_func(&users_timer[sockfd]);
                     if (timer) {
-                        timer_lst.del_timer(timer);
+                        timer_heap.del_timer(timer);
                     }
                 }
             } else if (events[i].events & EPOLLOUT) {
-                util_timer* timer = users_timer[sockfd].timer;
+                timer_node* timer = users_timer[sockfd].timer;
                 if (users[sockfd].write()) {
                     LOG_INFO("send data to the client(%s)",
                              inet_ntoa(users[sockfd].get_address()->sin_addr));
@@ -319,12 +321,12 @@ int main(int argc, char* argv[]) {
                         timer->expire = cur + 3 * TIMESLOT;
                         LOG_INFO("%s", "adjust timer once");
                         Log::get_instance()->flush();
-                        timer_lst.adjust_timer(timer);
+                        timer_heap.adjust_timer(timer);
                     }
                 } else {
                     timer->cb_func(&users_timer[sockfd]);
                     if (timer) {
-                        timer_lst.del_timer(timer);
+                        timer_heap.del_timer(timer);
                     }
                 }
             }

@@ -18,7 +18,7 @@ aux_source_directory(. DIRSRCS)
 add_subdirectory(http)
 add_subdirectory(log)
 add_subdirectory(database)
-# add_subdirectory(timer)
+add_subdirectory(timer)
 
 # 添加头文件搜索路径
 include_directories(./ ./threadpool ./http ./log ./database ./timer ${MYINCLUDE})
@@ -27,4 +27,4 @@ include_directories(./ ./threadpool ./http ./log ./database ./timer ${MYINCLUDE}
 add_executable(WebServer ${DIRSRCS})
 
 # 将目标文件与库文件进行链接
-target_link_libraries(WebServer http log database ${MYLIB}/libmysqlclient.so pthread)
+target_link_libraries(WebServer http log database timer ${MYLIB}/libmysqlclient.so pthread)

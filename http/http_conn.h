@@ -1,5 +1,5 @@
 /*
- * 解析 http 连接的类
+ * 解析 HTTP 连接的类
  * author: octalzero
  */
 #ifndef HTTPCONNECTION_H
